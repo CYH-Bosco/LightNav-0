@@ -7,7 +7,6 @@
 <div id="top" align="center">
 
 [![arXiv](https://img.shields.io/badge/arXiv-2608.30935-b31b1b.svg)](https://arxiv.org/abs/2608.30935)
-
 [![Project Page](https://img.shields.io/badge/Project%20Page-9c403d?style=flat)](https://www.lightorigins.com/en/blog/lightnav-0)
 [![Model](https://img.shields.io/badge/🤗%20Model-LightNav--0-yellow.svg)](https://huggingface.co/LightOriginsHQ/LightNav-0)
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/zwZuD9JG)
