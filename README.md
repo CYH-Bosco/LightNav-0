@@ -6,8 +6,7 @@
 
 <div id="top" align="center">
 
-<!-- arXiv badge: uncomment once the preprint is up.
-[![arXiv](https://img.shields.io/badge/Arxiv-%233b6291?style=flat)](https://arxiv.org/abs/...) -->
+[![arXiv](https://img.shields.io/badge/arXiv-2608.30935-b31b1b.svg)](https://arxiv.org/abs/2608.30935)
 
 [![Project Page](https://img.shields.io/badge/Project%20Page-9c403d?style=flat)](https://www.lightorigins.com/en/blog/lightnav-0)
 [![Model](https://img.shields.io/badge/🤗%20Model-LightNav--0-yellow.svg)](https://huggingface.co/LightOriginsHQ/LightNav-0)
@@ -266,9 +265,11 @@ If you find this work helpful, please consider citing:
 ```bibtex
 @misc{lightnav0,
   title  = {LightNav-0: Eliciting VLM Spatial Intelligence for Generalist Embodied Navigation},
-  author = {Light Origins},
+  author = {Light Origins Team},
   year   = {2026},
-  url    = {https://github.com/lightorigins/LightNav-0}
+  eprint = {2608.30935},
+  archivePrefix = {arXiv},
+  url    = {https://arxiv.org/abs/2608.30935}
 }
 ```
 
