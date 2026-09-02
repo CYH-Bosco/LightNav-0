@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 
 from aiohttp import WSMsgType, web
 
+from .model import SCENE_DATASET, SCENE_ID, SCENE_NAME
 from .mpc import (
     A_MAX_V,
     A_MAX_W,
@@ -22,11 +23,10 @@ from .mpc import (
     Q_WEIGHTS,
     R_WEIGHTS,
     TRACK_V_MAX,
-    WAYPOINT_DT_S,
     W_MAX,
+    WAYPOINT_DT_S,
     MpcTracker,
 )
-from .model import SCENE_DATASET, SCENE_ID, SCENE_NAME
 from .simulation import Simulation
 from .vln_client import VlnClient
 
@@ -254,7 +254,7 @@ class VlnMujocoServer:
         )
         return {
             "scene": {"id": SCENE_ID, "name": SCENE_NAME, "dataset": SCENE_DATASET},
-            "robot": {"name": "TurtleBot", "connected": True},
+            "robot": {"name": self.simulation.robot_name, "connected": True},
             "simulation": self.simulation.snapshot(),
             "vln": {
                 "state": vln.state,

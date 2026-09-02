@@ -72,8 +72,9 @@ mujoco_demo/
 ├── vln_mujoco/
 │   ├── assets/        # a single MolmoSpaces scene, nothing more
 │   ├── web/           # static single page, no build step
-│   ├── model.py       # scene + TurtleBot MJCF
-│   ├── simulation.py  # kinematics, cameras, wheel visualisation
+│   ├── robots/        # robot backend protocol + TurtleBot implementation
+│   ├── model.py       # scene loading and MuJoCo compilation
+│   ├── simulation.py  # shared runtime, cameras, watchdog, frame capture
 │   ├── mpc.py         # CasADi/IPOPT kinematic MPC
 │   ├── vln_client.py  # VLN WebSocket client
 │   └── server.py      # HTTP/WebSocket and control ownership
@@ -81,6 +82,15 @@ mujoco_demo/
 ├── tests/
 └── run.sh
 ```
+
+The simulation runtime is independent of the bundled TurtleBot embodiment.
+Robot implementations satisfy the `RobotBackend` protocol in
+`vln_mujoco/robots/base.py`: they provide a MuJoCo model and data, consume the
+shared planar velocity command, report pose and velocity, and select the two
+render cameras. The runtime continues to own threading, command timeout,
+rendering, frame timestamps, and the server-facing snapshot. A new embodiment
+therefore does not need to modify the VLN client, MPC, web server, or render
+loop.
 
 Body-frame waypoints returned by VLN are first transformed into the world frame
 using the robot pose at image-capture time, then tracked by the MPC in the
