@@ -1,7 +1,6 @@
 from html.parser import HTMLParser
 from pathlib import Path
 
-
 WEB_DIR = Path(__file__).parents[1] / "vln_mujoco" / "web"
 
 
