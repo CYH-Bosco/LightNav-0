@@ -1,15 +1,26 @@
 (() => {
   "use strict";
   const $ = (id) => document.getElementById(id);
+  const storedBoolean = (key) => {
+    try { return localStorage.getItem(key) === "true"; } catch { return false; }
+  };
+  const storeBoolean = (key, value) => {
+    try { localStorage.setItem(key, String(value)); } catch { return; }
+  };
   const ui = {
-    cameraImage: $("camera-image"), path: $("path-overlay"),
+    cameraImage: $("camera-image"), path: $("path-overlay"), thirdPersonOverlay: $("third-person-overlay"),
+    thirdPersonOverlayImage: $("third-person-overlay-image"), thirdPersonOverlayToggle: $("third-person-overlay-toggle"),
     firstPersonView: $("first-person-view"), thirdPersonView: $("third-person-view"),
     simTime: $("sim-time"), cameraFps: $("camera-fps"), latency: $("latency"), count: $("waypoint-count"),
     serverUrl: $("server-url"), saveServer: $("save-server"), instruction: $("instruction"), vlnToggle: $("vln-toggle"),
     vlnState: $("vln-state"), vlnDetail: $("vln-detail"), controlToggle: $("control-toggle"), stop: $("stop-button"), reset: $("reset-button"),
     toast: $("toast")
   };
-  const state = {socket:null, connected:false, reconnect:null, data:null, keys:new Set(), toastTimer:null, cameraBusy:false, cameraUrl:null, cameraView:"first", serverUrlDirty:false};
+  const state = {
+    socket:null, connected:false, reconnect:null, data:null, keys:new Set(), toastTimer:null,
+    cameraBusy:false, cameraUrl:null, overlayCameraUrl:null, cameraView:"first",
+    overlayMinimized:storedBoolean("third-person-overlay-minimized"), serverUrlDirty:false
+  };
 
   function send(payload) {
     if (state.socket?.readyState !== WebSocket.OPEN) { toast("Web connection not ready", true); return false; }
@@ -46,28 +57,39 @@
       render();
     };
   }
+  async function refreshImage(image, endpoint, urlKey, isCurrent) {
+    let nextUrl = null;
+    try {
+      const response = await fetch(`${endpoint}?t=${Date.now()}`, {cache:"no-store"});
+      if (!response.ok) throw new Error("camera unavailable");
+      nextUrl = URL.createObjectURL(await response.blob());
+      if (!isCurrent()) return;
+      await new Promise((resolve, reject) => {
+        image.onload = resolve; image.onerror = reject; image.src = nextUrl;
+      });
+      if (!isCurrent()) return;
+      const oldUrl = state[urlKey]; state[urlKey] = nextUrl; nextUrl = null;
+      if (oldUrl) URL.revokeObjectURL(oldUrl);
+    } finally {
+      if (nextUrl) URL.revokeObjectURL(nextUrl);
+    }
+  }
   async function refreshCamera() {
     if (state.cameraBusy) return;
     state.cameraBusy = true;
     const cameraView = state.cameraView;
-    let nextUrl = null;
     try {
       const endpoint = cameraView === "third" ? "/api/third-person.jpg" : "/api/camera.jpg";
-      const response = await fetch(`${endpoint}?t=${Date.now()}`, {cache:"no-store"});
-      if (!response.ok) throw new Error("camera unavailable");
-      nextUrl = URL.createObjectURL(await response.blob());
-      if (cameraView !== state.cameraView) {
-        URL.revokeObjectURL(nextUrl);
-        nextUrl = null;
-        return;
+      const updates = [refreshImage(ui.cameraImage, endpoint, "cameraUrl", () => cameraView === state.cameraView)];
+      if (cameraView === "first") {
+        updates.push(refreshImage(
+          ui.thirdPersonOverlayImage,
+          "/api/third-person.jpg",
+          "overlayCameraUrl",
+          () => state.cameraView === "first"
+        ));
       }
-      await new Promise((resolve, reject) => {
-        ui.cameraImage.onload = resolve; ui.cameraImage.onerror = reject; ui.cameraImage.src = nextUrl;
-      });
-      const oldUrl = state.cameraUrl; state.cameraUrl = nextUrl; nextUrl = null;
-      if (oldUrl) URL.revokeObjectURL(oldUrl);
-    } catch (_) {
-      if (nextUrl) URL.revokeObjectURL(nextUrl);
+      await Promise.allSettled(updates);
     } finally { state.cameraBusy = false; }
   }
   function render() {
@@ -77,6 +99,12 @@
     ui.cameraFps.textContent = camera.ready ? `${Number(camera.fps || 0).toFixed(1)} Hz` : "—";
     ui.firstPersonView.classList.toggle("active", state.cameraView === "first");
     ui.thirdPersonView.classList.toggle("active", state.cameraView === "third");
+    ui.thirdPersonOverlay.hidden = state.cameraView !== "first";
+    ui.thirdPersonOverlay.classList.toggle("minimized", state.overlayMinimized);
+    ui.thirdPersonOverlayToggle.textContent = state.overlayMinimized ? "+" : "−";
+    ui.thirdPersonOverlayToggle.setAttribute("aria-label", state.overlayMinimized ? "Restore third-person view" : "Minimize third-person view");
+    ui.thirdPersonOverlayToggle.setAttribute("aria-expanded", String(!state.overlayMinimized));
+    ui.thirdPersonOverlayToggle.title = state.overlayMinimized ? "Restore third-person view" : "Minimize third-person view";
     ui.latency.textContent = Number.isFinite(Number(vln.latency_ms)) ? `${Number(vln.latency_ms).toFixed(0)} ms` : "—";
     const waypoints = Array.isArray(vln.waypoints) ? vln.waypoints : [];
     ui.count.textContent = String(waypoints.length);
@@ -155,6 +183,11 @@
   ui.saveServer.addEventListener("click", () => send({type:"set_server_url", server_url:ui.serverUrl.value.trim()}));
   ui.firstPersonView.addEventListener("click", () => { state.cameraView = "first"; render(); refreshCamera(); });
   ui.thirdPersonView.addEventListener("click", () => { state.cameraView = "third"; render(); refreshCamera(); });
+  ui.thirdPersonOverlayToggle.addEventListener("click", () => {
+    state.overlayMinimized = !state.overlayMinimized;
+    storeBoolean("third-person-overlay-minimized", state.overlayMinimized);
+    render();
+  });
   ui.vlnToggle.addEventListener("click", () => {
     const enabled = !state.data?.control?.auto;
     const instruction = ui.instruction.value.trim();

@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0e1013">
   <title>VLN MuJoCo Console</title>
-  <link rel="stylesheet" href="/static/styles.css">
-  <script src="/static/app.js" defer></script>
+  <link rel="stylesheet" href="/static/styles.css?v=third-person-pip">
+  <script src="/static/app.js?v=third-person-pip" defer></script>
 </head>
 <body>
   <main class="shell">
@@ -21,8 +21,13 @@
         </div>
       </div>
       <div class="camera">
-        <img id="camera-image" alt="Live camera view of the TurtleBot in MuJoCo">
+        <img id="camera-image" alt="Live robot camera view in MuJoCo">
         <canvas id="path-overlay" width="480" height="270" aria-hidden="true"></canvas>
+        <div id="third-person-overlay" class="third-person-overlay">
+          <img id="third-person-overlay-image" alt="Third-person robot view in MuJoCo">
+          <span class="third-person-overlay-label">Third person</span>
+          <button id="third-person-overlay-toggle" class="third-person-overlay-toggle" type="button" aria-label="Minimize third-person view">−</button>
+        </div>
       </div>
       <div class="metrics">
         <span>SIM TIME<strong id="sim-time">0.0 s</strong></span>
