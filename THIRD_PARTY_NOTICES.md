@@ -95,6 +95,27 @@ The files under `evt_bench/` are integration glue for that benchmark:
 Please observe the NonCommercial and ShareAlike terms of CC BY-NC-SA 4.0 when using
 EVT-Bench or results derived from it. See `docs/EVAL_EVT_BENCH.md`.
 
+### MicroDuck robot model and walking policies (Pollen Robotics)
+
+The optional `microduck` backend of the MuJoCo demo (`mujoco_demo/`, `--robot
+microduck`) loads two external files at runtime and redistributes neither:
+
+- **Robot model** — the MJCF `robot_allcollisions.xml` and the STL meshes it
+  references, from [pollen-robotics/microduck_rl](https://github.com/pollen-robotics/microduck_rl).
+  The repository's code and MJCF are Apache-2.0; its README states that the 3D
+  model files are licensed under **Creative Commons BY-NC-SA**. Users clone the
+  repository themselves and must observe the NonCommercial and ShareAlike terms
+  for the meshes.
+- **Walking policy** — `alpha_walking.onnx` from
+  [pollen-robotics/microduck-policies](https://huggingface.co/pollen-robotics/microduck-policies)
+  on the Hugging Face Hub (Apache-2.0; also vendored in the `policies/`
+  directory of [pollen-robotics/microduck](https://github.com/pollen-robotics/microduck)).
+
+`docs/assets/mujoco_microduck.gif` in the README is a screen recording of the
+demo and therefore shows renders of the MicroDuck 3D model. Attribution: MicroDuck
+by Pollen Robotics, 3D model files CC BY-NC-SA. The model files themselves are
+not part of this repository.
+
 ### Robot deployment dependencies (`robot_deploy/`)
 
 The ROS 2 workspace under `robot_deploy/` interoperates with, but does not
@@ -131,5 +152,6 @@ subject to the licence of the checkpoint they came from.
 
 The MuJoCo demo (`mujoco_demo/`) additionally depends on MuJoCo (Apache-2.0),
 CasADi (LGPL-3.0-or-later) with Ipopt (EPL-2.0) used through it, aiohttp
-(Apache-2.0/MIT), and Pillow (MIT-CMU) — all installed by the user, none
-redistributed here.
+(Apache-2.0/MIT), and Pillow (MIT-CMU), plus ONNX Runtime (MIT) when the optional
+`microduck` extra is installed — all installed by the user, none redistributed
+here.

@@ -241,6 +241,13 @@ the same MPC and client protocol as the real robots in
 
 ![MuJoCo demo: the simulated robot navigates to the trashcan from a language instruction](docs/assets/mujoco_demo.gif)
 
+The same runtime also carries an optional **MicroDuck** biped: Pollen Robotics' MJCF and ONNX
+walking policy sit under the same MPC, so LightNav's waypoints become gait commands. The two
+external files to fetch are listed in
+[`mujoco_demo/README.md`](mujoco_demo/README.md#microduck-optional):
+
+![MuJoCo demo at 2x speed: the MicroDuck biped follows "turn around, go to the TV" from its head camera, with LightNav's pointing markers and waypoint trail overlaid and a third-person picture-in-picture](docs/assets/mujoco_microduck.gif)
+
 ## 🤖 Real-Robot Deployment
 
 The model runs on a GPU host behind `lightnav-serve`; the robot runs a thin WebSocket client

@@ -104,7 +104,10 @@ wins.
 
 `mujoco_demo` is a separate `uv` project. Run `./run.sh` for its bundled
 TurtleBot, or use `uv run --extra microduck vln-mujoco ...` when selecting the
-optional MicroDuck backend.
+optional MicroDuck backend. MicroDuck needs two external files, the MJCF from
+`pollen-robotics/microduck_rl` and an ONNX policy from
+`pollen-robotics/microduck-policies`; the download steps are in
+[mujoco_demo/README.md](../mujoco_demo/README.md#microduck-optional).
 
 | Flag | Default | Meaning |
 | --- | --- | --- |

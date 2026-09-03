@@ -50,17 +50,60 @@ address can also be set at startup:
 ### MicroDuck (optional)
 
 MicroDuck support deliberately keeps the robot MJCF, meshes, and walking policy
-outside this repository. Obtain those files from their owners under terms that
-permit your use, then start the demo with the optional ONNX Runtime dependency:
+outside this repository. They are published by Pollen Robotics: the MJCF and
+code under Apache-2.0, the 3D mesh files under CC BY-NC-SA, and the policies
+under Apache-2.0. Fetch them once, then point the demo at the files, and observe
+the NonCommercial terms that apply to the meshes.
+
+#### 1. Robot model (MJCF + meshes)
 
 ```bash
-MUJOCO_GL=egl uv run --extra microduck vln-mujoco \
-  --host 0.0.0.0 \
-  --vln-server ws://127.0.0.1:8050 \
+git clone https://github.com/pollen-robotics/microduck_rl.git
+# MJCF: microduck_rl/src/mjlab_microduck/robot/microduck/robot_allcollisions.xml
+```
+
+The meshes live next to the MJCF under `assets/`; keep the directory layout
+intact. Other variants (`robot_walk.xml`, `robot_groundcontact.xml`) share the
+same `head_camera` and actuator layout but have not been tested here.
+
+#### 2. Walking policy (ONNX)
+
+The stock policy set ships in `pollen-robotics/microduck-policies` on the
+Hugging Face Hub (mirrored in the `policies/` directory of
+[pollen-robotics/microduck](https://github.com/pollen-robotics/microduck)):
+
+```bash
+mkdir -p microduck_policies && cd microduck_policies
+curl -L -o alpha_walking.onnx \
+  https://huggingface.co/pollen-robotics/microduck-policies/resolve/main/alpha_walking.onnx
+```
+
+Only ONNX files produced by `microduck_rl`'s `scripts/export.py` are usable:
+the exporter bakes the observation normaliser and the metadata below into the
+graph. A hand-converted checkpoint fails the startup checks.
+
+#### 3. Optional dependency
+
+```bash
+uv sync --extra microduck        # installs onnxruntime; TurtleBot installs stay untouched
+```
+
+#### 4. Run
+
+```bash
+uv run --extra microduck vln-mujoco \
   --robot microduck \
   --robot-model /path/to/microduck_rl/src/mjlab_microduck/robot/microduck/robot_allcollisions.xml \
-  --walking-policy /path/to/alpha_walking.onnx
+  --walking-policy /path/to/microduck_policies/alpha_walking.onnx
 ```
+
+Add `--host 0.0.0.0` / `--vln-server ws://<gpu-host>:8050` as for the TurtleBot.
+On a headless Linux box prefix the command with `MUJOCO_GL=egl`; on macOS leave
+`MUJOCO_GL` unset, the default CGL backend renders off-screen without a display.
+Startup takes a few seconds longer than TurtleBot because the ProcTHOR scene and
+the robot are composed with `MjSpec` and the ONNX session is validated first.
+
+#### Contract
 
 The MJCF must provide `trunk_base`, `trunk_base_freejoint`, `head_camera`, the
 `imu_ang_vel` three-axis sensor, and 14 joint actuators. The ONNX policy must
@@ -71,9 +114,13 @@ and provide `joint_names`, `default_joint_pos`, `action_scale`,
 incorrect joint mapping.
 
 The head camera is used for LightNav input, while MuJoCo trunk pose and velocity
-provide MPC feedback. Commands are clipped to the policy range (`±0.30 m/s`,
+provide MPC feedback. The upstream `head_camera` carries no field of view or
+optical orientation, so the demo re-aims it forward and sets the same
+`fovy` as the TurtleBot camera (112° horizontal at 16:9, the lens the real
+robots use). Commands are clipped to the policy range (`±0.30 m/s`,
 `±1.50 rad/s`); small non-zero linear commands enter the stable walking range,
-while commands inside the stop deadband remain zero.
+while commands inside the stop deadband remain zero. The policy was trained at
+50 Hz with `0.005 s` physics steps, which the shared runtime matches.
 
 Pressing space or clicking `STOP` on the page zeroes the velocity immediately.
 Manual commands also auto-zero when not refreshed for 350 ms.
