@@ -257,6 +257,70 @@ The client loop, velocity mapping and wire protocol are in
 [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md#real-robot-deployment),
 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and [docs/PROTOCOL.md](docs/PROTOCOL.md).
 
+## ✍️ Prompt Guide
+
+What makes a good navigation instruction: one **action verb** (`Go to` / `Walk to` / `Head to`
+/ `Walk towards` / `Approach` — any works), an optional **direction**, an **unambiguous object
+phrase**, and an optional `and stop`:
+
+```
+[action verb] + [direction (optional)] + [disambiguated object phrase] + [and stop (optional)]
+```
+
+"Disambiguated" means there is no doubt *which* object is meant. Pick **one** of the four
+strategies below per instruction — don't stack them. Ranked by reliability (every example is a
+verified real instruction):
+
+**① Direction + object — most reliable, use first.**
+
+```
+Turn left and walk to the red lamppost
+Go to the front-left TV
+Go to the desk on your right and stop.
+Turn right, then walk to the chair and stop.
+```
+
+The direction may precede the action (`Turn left and go to X`) or follow the object
+(`the desk on your right`) — both work. Indoors prefer `front-left` / `front-right` /
+`in front`; outdoors prefer `turn left` / `turn right`. Directions are relative to the
+**robot**, not the room.
+
+**② Relational anchor (`next to` / `on` / `behind`) — second choice.**
+
+```
+Walk towards the trash can next to the green lawn
+Walk to the vase on the dining table ahead.
+Go to the table behind you
+Head to the plant behind you on the right.
+```
+
+`A next to B` / `A on B` / `A behind you` all work — `behind you` is especially effective,
+since it gives both a direction (turn around) and disambiguation at once. Choose a **large,
+salient** anchor B (lawn / trees / dining table / walkway), not another small object.
+
+**③ Extremes (`leftmost` / `nearest`) — usable.**
+
+```
+Go to the leftmost TV in front
+Walk to the rightmost curtain.
+Turn left and walk to the nearest grey pointed stone bollard on the park lawn
+```
+
+`leftmost` / `rightmost` outperform `nearest` / `farthest`: the former are directly visible,
+the latter require depth estimation.
+
+**④ Ordinals (`first` / `second` / `third`) — weakest, use sparingly.**
+
+```
+Walk to the first wooden park bench on the right
+Turn left and walk to the second stone bench from the left.
+Go to the first chair on the right side of the dining table
+```
+
+An ordinal **must** come with a counting direction (`from the left` / `on the right`),
+otherwise where to start counting is ambiguous. Avoid anything beyond `third`; to single out
+one object, prefer an extreme (`leftmost`) or a relation (`next to the door`) over an ordinal.
+
 ## 🔗 Citation
 
 If you find this work helpful, please consider citing:
