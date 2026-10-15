@@ -1,0 +1,5 @@
+# Python 3.10 matches this Jetson's existing native pyrealsense2 binding.
+numpy>=1.24,<2
+opencv-python-headless>=4.8,<4.12
+aiohttp>=3.9,<4
+casadi>=3.7,<4

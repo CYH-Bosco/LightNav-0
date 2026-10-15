@@ -77,6 +77,50 @@ wins.
 
 ## Server / CLI parameters
 
+### Jetson bench client
+
+`robot_deploy/scripts/robomaster_lightnav.py` runs the full RealSense/GPU/MPC/EP
+pipeline with a browser view. EP wheel velocity and IMU yaw supply odometry.
+Motion is disabled unless `--motion` is supplied.
+
+| Flag | Default | Meaning |
+| --- | --- | --- |
+| `--instruction` | required | navigation prompt |
+| `--mode` | `objnav` | `objnav` completes on model stop; `track` sends zero during model stop and continues inference, resuming on a valid non-stop prediction. Independent of GPU `--task`. |
+| `--server` | `ws://127.0.0.1:8050` | GPU inference WebSocket URL |
+| `--motion` | off | send computed velocities to the EP; otherwise send zero only |
+| `--max-vel` | `0.15` | commanded forward velocity limit in m/s, `(0, 0.3]`; measured speed may overshoot |
+| `--max-yaw` | `0.3` | commanded yaw velocity limit in rad/s, `(0, 0.5]` |
+| `--host` / `--port` | `127.0.0.1` / `8088` | browser listener |
+| `--duration` | `0` | stop after this many seconds; `0` runs until Ctrl+C, browser STOP, or policy stop in `objnav` mode |
+| `--output` | `logs/robomaster-lightnav` | controller records and final summary |
+
+`robot_deploy/scripts/robomaster_velocity_test.py` verifies the EP USB/RNDIS
+connection and can send a bounded, direct SDK chassis velocity pulse.
+
+| Flag | Default | Meaning |
+| --- | --- | --- |
+| `--move` | off | enable the forward pulse after firmware and stationary telemetry checks |
+| `--speed` | `0.3` | forward speed in m/s, limited to `(0, 0.3]` |
+| `--duration` | `1.0` | pulse duration in seconds, limited to `(0, 2]` |
+| `--output` | `logs/robomaster-velocity-test.json` | connection, command, stop calls, and velocity telemetry report |
+
+`robot_deploy/scripts/jetson_dry_run.py` captures RealSense RGB/depth and previews
+MPC velocities as local JSON only. Setup and limitations are in
+[robot_deploy/JETSON.md](../robot_deploy/JETSON.md).
+
+| Flag | Default | Meaning |
+| --- | --- | --- |
+| `--server` | `ws://127.0.0.1:8050` | GPU-host WebSocket URL |
+| `--instruction` | `Move forward along the clear path.` | navigation instruction |
+| `--camera-only` | off | check RGB/depth without inference or MPC |
+| `--view` | off | serve a read-only browser view of the prediction's camera frame, top-down trajectory, and velocity preview |
+| `--continuous` | off | run until Ctrl+C; `--timeout` limits time without a new sample |
+| `--view-host` / `--view-port` | `127.0.0.1` / `8088` | preview listener; use `0.0.0.0` for a browser on another machine |
+| `--samples` | `5` | number of camera samples or real inference results required to pass |
+| `--timeout` | `60` | overall loop deadline in seconds; camera waits can add up to 5 seconds |
+| `--output` | repository `logs/jetson-dry-run` | directory for summary, samples, RGB preview, and depth array |
+
 `lightnav-serve` flags (environment names are what `scripts/start_servers.sh` and
 `docker/entrypoint.sh` read):
 
